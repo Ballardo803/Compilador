@@ -1,0 +1,316 @@
+options {
+  LOOKAHEAD = 1;
+  STATIC = true;
+  IGNORE_CASE = false;
+}
+
+PARSER_BEGIN(CompiC)
+package edu.itsco;
+import java.io.*;
+import java.io.FileNotFoundException;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.util.Scanner;
+import java.lang.String;
+
+
+public class CompiC{
+
+
+private static ControlaVariables cVariables;
+
+   private static PrintWriter archi;
+  public static void main(String args[]) throws ParseException,SemanticException,FileNotFoundException {
+    
+    cVariables=new ControlaVariables();
+    try{
+    FileInputStream entrada=new FileInputStream("programa.mic");
+    System.out.println("holaaaaa");
+    
+    CompiC compi=new CompiC(entrada);
+    compi.principal();
+    
+    System.out.println("Compilo correctamente");
+        }
+    catch (FileNotFoundException fex)
+    {
+    System.err.println(fex.getMessage());
+    }
+
+
+            
+            
+            
+            
+
+              
+
+  }
+
+}
+
+PARSER_END(CompiC)
+
+SKIP:{
+" "
+|"\n"
+|"\r"
+|"\t"
+}
+
+TOKEN:{
+<INT:"int">
+|<FLOAT:"float">
+|<STRING:"string">
+|<VOID:"void">
+
+|<PRINTF:"printf">
+|<SCANF:"scanf">
+
+|<IF:"if">
+|<ELSE:"else">
+|<SWITCH:"switch">
+|<CASE:"case">
+|<DEF:"default">
+|<BREAK:"break">
+
+|<FOR:"for">
+|<WHILE:"while">
+|<DO:"do">
+
+|<FUNCTION:"function">
+}
+
+TOKEN:{
+<SEMIC:";">
+|<OPK:"{">
+|<CLK:"}">
+
+|<OPP:"(">
+|<CLP:")">
+
+|<OPC:"[">
+|<CLC:"]">
+
+|<SUM:"+">
+|<RES:"-">
+|<MUL:"*">
+|<DIV:"/">
+|<MOD:"%">
+|<IGU:"=">
+|<EQUAL:"==">
+
+|<MAY:">">
+|<MEN:"<">
+|<MAYIG:">=">
+|<MENIG:"<=">
+|<DIF:"!=">
+
+|<AND:"&&">
+|<OR:"||">
+|<NOT:"!">
+
+}
+
+TOKEN:{
+<#letra:["a"-"z","A"-"Z"]>
+|<#digito:["0"-"9"]>
+
+|<VALOR_ENTERO:(<digito>)+>
+|<VALOR_FLOAT:(<digito>)+"."(<digito>)+>
+|<VALOR_STRING:("\""(~["\""])+"\"")>
+
+|<ID:(<letra>|"_")(<letra>|<digito>|"_")*>
+
+}
+public void principal() throws ParseException, SemanticException,FileNotFoundException:{
+archi = new PrintWriter("C://pruebasconjava//prueba.vb");
+archi.println("Module modulo1");
+archi.println("\t sub main()");
+
+}{
+(declararVariable() <SEMIC>)*
+(gramMetodos())+
+{
+archi.println("\t end sub");
+archi.println("end module");
+archi.close();
+}
+}
+
+public void cuerpoMetodos() throws SemanticException, FileNotFoundException,ParseException:{
+
+}
+{
+(imprimir()
+|leer()
+|gramaticaIf()
+|gramaticaSwitch()
+|gramaticaWhile()
+|gramaticaDowhile()
+|asignacion())+
+}
+
+private void declararVariable() throws ParseException, SemanticException, FileNotFoundException:{           
+Token id;
+Token tipo;
+Variable v;
+}{
+    tipo = tipoDato() id=<ID> [cuerpoAsignacion()]
+    {
+        v=new Variable();
+        v.setNombre(id.image);
+        v.setTipo(tipo.image);
+        v.setLocal(false);
+        cVariables.agregarVariable(v);
+        System.out.println(id.image + " de tipo " +tipo.image);
+        cVariables.existeVariable(v);
+//esto es lo que se va a escribir en el archivo de salida
+if(tipo.image=="int"||tipo.image=="INT"){
+archi.println("\t\t\t Dim "+id.image+" as Integer");
+}else if(tipo.image=="string"||tipo.image=="STRING"){
+archi.println("\t\t\t Dim "+id.image+" as String");
+}else{
+archi.println("\t\t\t Dim "+id.image+" as Double");
+}
+    }
+}
+private Token tipoDato() throws SemanticException, FileNotFoundException:{
+Token tipo;
+}{
+   (tipo=<INT>|
+    tipo=<FLOAT>|
+    tipo=<STRING>)
+    {
+        return tipo;
+    }
+}
+private void gramMetodos()throws SemanticException,FileNotFoundException:
+{}{
+<FUNCTION> (<VOID>|tipoDato()) <ID> <OPP>[parametros()]<CLP>
+<OPK>
+cuerpoMetodos()
+<CLK>
+}
+
+private void parametros() throws SemanticException, FileNotFoundException:{
+}{
+
+declararVariable()("," declararVariable())*
+}
+
+private void imprimir() throws SemanticException, FileNotFoundException:{
+Token id;
+}{
+<PRINTF> <OPP> (valores()|id=<ID>)(","(valores()|<ID>))* <CLP> <SEMIC>
+
+{
+
+
+}
+
+}
+
+private void valores() throws SemanticException, FileNotFoundException:{
+
+}{
+<VALOR_ENTERO>|<VALOR_STRING>|<VALOR_FLOAT>
+}
+
+private void leer() throws SemanticException, FileNotFoundException:{}
+{
+<SCANF> <OPP> <ID> <CLP> <SEMIC>
+}
+
+private void gramaticaIf() throws SemanticException, FileNotFoundException:{
+}{
+<IF><OPP> condicion() <CLP>
+[<OPK>
+    cuerpoMetodos()
+<CLK>]
+}
+
+private void gramaticaSwitch() throws SemanticException, FileNotFoundException:{}
+{
+<SWITCH><OPP><ID><CLP>
+<OPK>
+(<CASE> <VALOR_ENTERO>":"
+    cuerpoMetodos()
+<BREAK><SEMIC>)+
+[<DEF>":" cuerpoMetodos()]
+<CLK>
+}
+
+private void gramaticaWhile() throws SemanticException, FileNotFoundException:{}
+{
+<WHILE> <OPP> condicion() <CLP>
+<OPK>
+cuerpoMetodos()
+<CLK>
+}
+
+private void gramaticaDowhile() throws SemanticException, FileNotFoundException:{}
+{
+<DO> <OPK>
+cuerpoMetodos()
+<CLK> <WHILE> <OPP> condicion() <CLP> <SEMIC>
+}
+
+private void condicion() throws SemanticException, FileNotFoundException:{}
+{
+condicionSimple() (opLogico() condicionSimple())*
+}
+
+private void condicionSimple() throws SemanticException, FileNotFoundException:{}
+{
+[<NOT>](<ID>|valores()) opRelacional()
+    (<ID>|valores())
+}
+
+private void opRelacional() throws SemanticException, FileNotFoundException:{
+}{
+<MAY>|<MEN>|<MAYIG>|<MENIG>|<DIF>|<EQUAL>
+}
+
+private void opLogico() throws SemanticException, FileNotFoundException:{}
+{
+<AND>|<OR>
+}
+
+private void asignacion() throws SemanticException, FileNotFoundException:{}
+{
+<ID> cuerpoAsignacion() <SEMIC>
+}
+
+private void cuerpoAsignacion() throws SemanticException, FileNotFoundException:{}
+{
+<IGU> (opBasica())
+}
+
+private void opBasica() throws SemanticException, FileNotFoundException:{}
+{
+(valores()|<ID>|opParentesis()) ( 
+                opAritmetico() ( valores() 
+                                    |<ID>
+                                    |opParentesis() )
+                                    )*
+}
+
+private void opParentesis() throws SemanticException, FileNotFoundException:{}
+{
+    <OPP> (opBasica())<CLP>
+}
+
+private void opAritmetico() throws SemanticException, FileNotFoundException:{}
+{
+    <SUM>|<RES>|<MUL>|<DIV>|<MOD>
+}
+
+private void gramaticaFor() throws SemanticException, FileNotFoundException:{}
+{
+<FOR> <OPP> <ID> cuerpoAsignacion() <SEMIC> condicion() <SEMIC> <ID> cuerpoAsignacion()<CLP>
+<OPK>
+cuerpoMetodos()
+<CLK>
+}
