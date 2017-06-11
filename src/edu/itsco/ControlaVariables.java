@@ -10,7 +10,7 @@ import java.util.List;
 
 /**
  *
- * @author Sergio
+ * @author betom
  */
 public class ControlaVariables  {
     private final List<Variable> listaVariables;

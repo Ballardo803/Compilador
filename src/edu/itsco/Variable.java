@@ -9,7 +9,7 @@ import java.util.Objects;
 
 /**
  *
- * @author 
+ * @author betom
  */
 public class Variable {
     private String nombre;

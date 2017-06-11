@@ -7,7 +7,7 @@ package edu.itsco;
 
 /**
  *
- * @author Sergio
+ * @author betom
  */
 public class SemanticException extends Exception{
     

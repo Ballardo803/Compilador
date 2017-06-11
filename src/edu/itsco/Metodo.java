@@ -7,7 +7,7 @@ package edu.itsco;
 
 /**
  *
- * @author Sergio
+ * @author betom
  */
 public class Metodo {
     private String nombre;

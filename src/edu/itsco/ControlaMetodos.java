@@ -11,7 +11,7 @@ import java.util.Objects;
 
 /**
  *
- * @author Sergio
+ * @author betom
  */
 public class ControlaMetodos {
     private final List<Metodo> listaMetodos;
